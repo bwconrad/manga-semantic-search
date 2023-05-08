@@ -1,39 +1,16 @@
 import pickle
 
 import pandas as pd
-from sentence_transformers import SentenceTransformer, util
+from sentence_transformers import SentenceTransformer, util, CrossEncoder
 
 
-def build_corpus(
-    data_path: str,
-    model_name: str = "all-mpnet-base-v2",
-    output_path: str = "embeddings.pkl",
-):
-    """Embed all series descriptions and save results to file"""
-
-    # Load descriptions
-    data = pd.read_csv(data_path)
-    descs = data.input.tolist()
-
-    # Load model
-    model = SentenceTransformer(model_name)
-    print(model[0])
-
-    # Embed descriptions
-    corpus_embeddings = model.encode(descs, show_progress_bar=True)
-
-    # Save embeddings
-    with open(output_path, "wb") as f:
-        pickle.dump(corpus_embeddings, f)
-
-
-def search(
+def retrieve(
     query: str,
     top_k: int = 5,
     model_name: str = "all-mpnet-base-v2",
-    corpus_path: str = "embeddings/desc-embeddings.pkl",
+    corpus_path: str = "embeddings/desc-embeddings-long.all-mpnet-base-v2.pkl",
 ):
-    """Find most similar series in a corpus given a query"""
+    """Retrieve the most similar series in a corpus given a query"""
 
     # Load corpus embeddings
     with open(corpus_path, "rb") as f:
@@ -50,27 +27,37 @@ def search(
     return results
 
 
+def rerank(
+    query: str,
+    retrieved: pd.DataFrame,
+    top_k: int = 5,
+    model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
+):
+    """Re-rank the retrieved series using a cross encoder"""
+
+    # Create pairs of query and descriptions
+    inp = [[query, desc] for desc in retrieved["desc"]]
+
+    # Get scores for each pair
+    cross_encoder = CrossEncoder(model_name)
+    cross_scores = cross_encoder.predict(inp)
+    retrieved["cross-score"] = cross_scores
+
+    # Get top-k after re-ranking
+    results = retrieved.sort_values("cross-score", ascending=False).iloc[:top_k]
+
+    return results
+
+
 if __name__ == "__main__":
-    from argparse import ArgumentParser
+    data = pd.read_csv("data/cleaned-long.csv")
+    q = "a series about people battling each other in cooking competitions"
+    results = retrieve(q, top_k=50)
 
-    parser = ArgumentParser()
-    parser.add_argument(
-        "--data", "-d", required=True, type=str, help="Path to data csv"
-    )
-    parser.add_argument(
-        "--output",
-        "-o",
-        default="desc-embeddings.pkl",
-        type=str,
-        help="Output path of pickled corpus embeddings",
-    )
-    parser.add_argument(
-        "--model",
-        "-m",
-        default="all-mpnet-base-v2",
-        type=str,
-        help="Name of embedding model",
-    )
-    args = parser.parse_args()
+    idxs = results["corpus_id"].tolist()
+    descs = data.iloc[idxs].input.tolist()
+    results["desc"] = descs
+    print(results)
 
-    build_corpus(args.data, args.model, args.output)
+    reranked = rerank(q, results, top_k=5)
+    print(reranked)
