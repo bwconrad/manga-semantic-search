@@ -69,3 +69,5 @@ if __name__ == "__main__":
     raw.dropna(subset=["description"], inplace=True)  # Drop rows without a description
     raw.input = raw.apply(clean_description, axis=1)
     raw.to_csv(args.output, index=False)
+
+    print(f"Finished cleaning. Results written to {args.output}")

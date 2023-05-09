@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     parser = ArgumentParser()
     parser.add_argument(
-        "--data", "-d", required=True, type=str, help="Path to data csv"
+        "--input", "-i", required=True, type=str, help="Path to data csv"
     )
     parser.add_argument(
         "--output",
@@ -47,8 +47,10 @@ if __name__ == "__main__":
         "-m",
         default="all-mpnet-base-v2",
         type=str,
-        help="Name of embedding model",
+        help="Name of embedding model. List of models can be found at https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models/",
     )
     args = parser.parse_args()
 
-    build_corpus(args.data, args.model, args.output)
+    build_corpus(args.input, args.model, args.output)
+
+    print(f"Finished building the embedding corpus. Results written to {args.output}")
