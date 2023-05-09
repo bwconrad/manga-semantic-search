@@ -1,4 +1,5 @@
 import os
+import pickle
 from io import BytesIO
 
 import pandas as pd
@@ -6,8 +7,6 @@ import requests
 import streamlit as st
 
 from inference import retrieve, rerank
-
-DATA_PATH = "data/cleaned-long.csv"
 
 
 def get_data(results: pd.DataFrame, data: pd.DataFrame, reranked=False):
@@ -35,9 +34,6 @@ def add_descriptions_to_results(results: pd.DataFrame):
     return results
 
 
-# Load corpus dataframe
-data = pd.read_csv(DATA_PATH)
-
 # Input UI
 st.title("Manga Semantic Search")
 query = st.text_input(
@@ -64,6 +60,7 @@ if do_rerank:
 model_name = str(embeddings_path).split(".")[-2]
 embeddings_path = os.path.join("embeddings", str(embeddings_path))
 
+
 # Output UI
 if st.button("Search"):
     if not k_retrieve:
@@ -78,10 +75,14 @@ if st.button("Search"):
             "'Number of results' should be less than or equal to 'Number of number of initialy retrieved series'"
         )
     else:
+        # Load embedddings and corresponding data table
+        with open(embeddings_path, "rb") as f:
+            data, corpus_embeddings = pickle.load(f).values()
+
         # Retrieve most similar series
         results = retrieve(
             query,
-            corpus_path=embeddings_path,
+            corpus_embeddings=corpus_embeddings,
             model_name=model_name,
             top_k=int(k_retrieve),
         )

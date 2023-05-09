@@ -1,5 +1,3 @@
-data/
-embeddings/
 .jupyter/
 spaces/
 *.ipynb

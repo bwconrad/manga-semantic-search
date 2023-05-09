@@ -22,9 +22,10 @@ def build_corpus(
     # Embed descriptions
     corpus_embeddings = model.encode(descs, show_progress_bar=True)
 
-    # Save embeddings
+    # Save embeddings and data
+    combined = {"data": data, "embeddings": corpus_embeddings}
     with open(output_path, "wb") as f:
-        pickle.dump(corpus_embeddings, f)
+        pickle.dump(combined, f)
 
 
 if __name__ == "__main__":
