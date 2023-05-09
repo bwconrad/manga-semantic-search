@@ -1,5 +1,10 @@
 # Manga Semantic Search
+
+[![Hugging Face Spaces](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Spaces-blue)](https://huggingface.co/spaces/bwconrad/manga-semantic-search)
+
 An application to search for manga series using text descriptions of it's content. Find the name of a series based on a vague recollection about its story.
+
+Available at the Hugging Face Space [here](https://huggingface.co/spaces/bwconrad/manga-semantic-search).
 
 __Note__: The current database only includes the top 1000 manga series on AniList.
 
@@ -12,7 +17,7 @@ __Note__: The current database only includes the top 1000 manga series on AniLis
 - `pip install -r requirements`
 
 ## Usage
-To start run `streamlit run app.py` which will open the application a browser new tab.
+To run locally run `streamlit run app.py` which will open the application a browser new tab.
 
 #### Data Preparation
 To re-reproduce the search embedding corpus, do the following:
