@@ -2,6 +2,7 @@ data/
 embeddings/
 .jupyter/
 spaces/
+*.ipynb
 
 
 # Byte-compiled / optimized / DLL files
